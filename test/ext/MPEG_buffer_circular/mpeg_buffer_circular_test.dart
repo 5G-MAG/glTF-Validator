@@ -34,7 +34,6 @@ Gltf _asset(Context context, int media, {bool includeMedia = true}) =>
       'buffers': <Object>[
         <String, Object>{
           'byteLength': 4,
-          'uri': 'data:application/octet-stream;base64,AAAAAA==',
           'extensions': <String, Object>{
             'MPEG_buffer_circular': <String, Object>{
               'count': 2,
@@ -142,6 +141,90 @@ void main() {
       _asset(context, 999);
       expect(context.errors.map((i) => i.type),
           contains(LinkError.unresolvedReference));
+    });
+  });
+
+  group('MPEG_buffer_circular checks of the buffer and its tracks', () {
+    Map<String, Object> asset({
+      bool uri = false,
+      List<Object> tracks,
+      int byteLength = 16,
+      int count = 2,
+    }) =>
+        <String, Object>{
+          'asset': <String, Object>{'version': '2.0'},
+          'extensionsUsed': <Object>['MPEG_media', 'MPEG_buffer_circular'],
+          'extensions': <String, Object>{
+            'MPEG_media': <String, Object>{
+              'media': <Object>[
+                <String, Object>{
+                  'alternatives': <Object>[
+                    <String, Object>{
+                      'uri': 'a.mp4',
+                      'mimeType': 'video/mp4',
+                      'tracks': <Object>[
+                        <String, Object>{'track': '#t0', 'codecs': 'avc1'},
+                        <String, Object>{'track': '#t1', 'codecs': 'mp4a'},
+                      ]
+                    },
+                    <String, Object>{'uri': 'b.mp4', 'mimeType': 'video/mp4'},
+                  ]
+                }
+              ]
+            }
+          },
+          'buffers': <Object>[
+            <String, Object>{
+              'byteLength': byteLength,
+              if (uri) 'uri': 'data:application/octet-stream;base64,AAAAAA==',
+              'extensions': <String, Object>{
+                'MPEG_buffer_circular': <String, Object>{
+                  'count': count,
+                  'media': 0,
+                  if (tracks != null) 'tracks': tracks,
+                }
+              }
+            }
+          ],
+          'bufferViews': <Object>[
+            <String, Object>{'buffer': 0, 'byteLength': 4},
+            <String, Object>{'buffer': 0, 'byteOffset': 4, 'byteLength': 4},
+          ],
+        };
+
+    Iterable<Issue> issues(Map<String, Object> map, {bool warnings = false}) {
+      final context = Context();
+      Gltf.fromMap(map, context);
+      return warnings ? context.warnings : context.errors;
+    }
+
+    test('a valid buffer has no issue', () {
+      final context = Context();
+      Gltf.fromMap(asset(tracks: <Object>[0, 1]), context);
+      expect(context.errors, isEmpty);
+      expect(context.warnings, isEmpty);
+    });
+
+    test('the buffer has no uri', () {
+      expect(issues(asset(uri: true)).map((i) => i.type),
+          [LinkError.mpegBufferCircularWithUri]);
+      expect(issues(asset()), isEmpty);
+    });
+
+    test('a track must exist in every alternative that lists tracks', () {
+      final found = issues(asset(tracks: <Object>[0, 2]));
+      expect(found.map((i) => i.type),
+          [LinkError.mpegBufferCircularTrackNotInAlternative]);
+      expect(found.first.message, contains('Track 2'));
+    });
+
+    test('byteLength holds count frames, as a warning', () {
+      final found = issues(asset(byteLength: 12), warnings: true);
+      expect(found.map((i) => i.type), [LinkError.mpegBufferCircularTooSmall]);
+      expect(issues(asset(byteLength: 16), warnings: true), isEmpty);
+      expect(issues(asset(byteLength: 24, count: 3), warnings: true), isEmpty);
+      expect(issues(asset(byteLength: 20, count: 3), warnings: true),
+          isNotEmpty);
     });
   });
 }

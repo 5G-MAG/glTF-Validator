@@ -247,8 +247,9 @@ class Gltf extends GltfProperty {
     }
 
     // Fixed order
-    linkCollection(buffers, Buffer);
     linkCollection(bufferViews, BufferView);
+    // after the buffer views: the extensions of a buffer look at them
+    linkCollection(buffers, Buffer);
 
     linkCollection(accessors, Accessor);
 

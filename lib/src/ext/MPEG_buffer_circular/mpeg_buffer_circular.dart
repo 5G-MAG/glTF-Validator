@@ -75,23 +75,74 @@ class MPEGBufferCircular extends GltfProperty {
         getExtras(map, context));
   }
 
+  Buffer _ownerBuffer(Gltf gltf) {
+    for (final buffer in gltf.buffers) {
+      if (identical(buffer.extensions['MPEG_buffer_circular'], this)) {
+        return buffer;
+      }
+    }
+    return null;
+  }
+
   @override
   void link(Gltf gltf, Context context) {
     if (context.validate) {
-        // Check media reference
-        if (media != -1) {
-          final _mediaObj = gltf.extensions['MPEG_media'] as MPEGMediaObject;
-          MPEGMedia _media;
-          if (_mediaObj != null) {
-            _media = _mediaObj.getMpegMedia(media);
-          } 
-          if (_media == null) {
-            context.addIssue(LinkError.unresolvedReference,
-                name: MEDIA, args: [media]);
-          } else {
-            _media.markAsUsed();
+      // Check media reference
+      MPEGMedia _media;
+      if (media != -1) {
+        final _mediaObj = gltf.extensions['MPEG_media'] as MPEGMediaObject;
+        if (_mediaObj != null) {
+          _media = _mediaObj.getMpegMedia(media);
+        }
+        if (_media == null) {
+          context.addIssue(LinkError.unresolvedReference,
+              name: MEDIA, args: [media]);
+        } else {
+          _media.markAsUsed();
+        }
+      }
+
+      // Each track must exist in every alternative that lists tracks
+      if (_media != null && tracks != null) {
+        for (final track in tracks) {
+          for (var a = 0; a < _media.alternatives.length; a++) {
+            final count = _media.alternatives[a].tracks.length;
+            if (count > 0 && track >= count) {
+              context.addIssue(LinkError.mpegBufferCircularTrackNotInAlternative,
+                  name: TRACKS, args: [track, a]);
+            }
           }
         }
+      }
+
+      final buffer = _ownerBuffer(gltf);
+      if (buffer != null) {
+        // The data comes from the media pipeline, not from a uri
+        if (buffer.hasUri) {
+          context.addIssue(LinkError.mpegBufferCircularWithUri,
+              noPointer: false);
+        }
+        // byteLength holds count frames, a frame being the extent of the
+        // buffer views of the buffer
+        var frame = 0;
+        for (final view in gltf.bufferViews) {
+          if (identical(view.buffer, buffer)) {
+            final end = view.byteOffset + view.byteLength;
+            if (end > frame) {
+              frame = end;
+            }
+          }
+        }
+        final frames = count < 2 ? 2 : count;
+        if (frame > 0 && buffer.byteLength < frame * frames) {
+          context.addIssue(LinkError.mpegBufferCircularTooSmall, args: [
+            buffer.byteLength,
+            (buffer.byteLength / frame).toStringAsFixed(2),
+            frame,
+            frames
+          ]);
+        }
+      }
     }
   }
 }

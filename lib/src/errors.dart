@@ -854,6 +854,21 @@ class LinkError extends IssueType {
       'MPEG_TEXTURE_VIDEO_ACCESSOR_NOT_TIMED',
       (args) => 'accessor/${args[0]} must have the MPEG_accessor_timed extension.');
 
+  static final LinkError mpegBufferCircularWithUri = LinkError._(
+      'MPEG_BUFFER_CIRCULAR_WITH_URI',
+      (args) => 'A buffer with MPEG_buffer_circular must not have a uri.');
+
+  static final LinkError mpegBufferCircularTrackNotInAlternative = LinkError._(
+      'MPEG_BUFFER_CIRCULAR_TRACK_NOT_IN_ALTERNATIVE',
+      (args) => 'Track ${args[0]} is not a track of alternative ${args[1]} '
+          'of the media.');
+
+  static final LinkError mpegBufferCircularTooSmall = LinkError._(
+      'MPEG_BUFFER_CIRCULAR_TOO_SMALL',
+      (args) => 'byteLength ${args[0]} holds ${args[1]} frames of ${args[2]} '
+          'bytes (the extent of the buffer views), count is ${args[3]}.',
+      Severity.Warning);
+
   LinkError._(String type, ErrorFunction message,
       [Severity severity = Severity.Error])
       : super(type, message, severity);
