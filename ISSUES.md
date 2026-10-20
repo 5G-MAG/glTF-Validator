@@ -60,6 +60,10 @@
 |MESH_PRIMITIVE_JOINTS_WEIGHTS_MISMATCH|Number of JOINTS attribute semantics (`%1`) does not match the number of WEIGHTS (`%2`).|Error|
 |MESH_PRIMITIVE_NO_POSITION|No POSITION attribute found.|Warning|
 |MESH_PRIMITIVE_TANGENT_WITHOUT_NORMAL|TANGENT attribute without NORMAL found.|Warning|
+|MPEG_ACCESSOR_TIMED_IMMUTABLE_REQUIRED|Without a bufferView the immutable flag should be present and true; an absent flag is read as true.|Warning|
+|MPEG_MEDIA_AUTOPLAY_GROUP_WITHOUT_AUTOPLAY|autoplayGroup is only allowed when autoplay is true.|Error|
+|MPEG_MEDIA_EMPTY_TIME_RANGE|endTimeOffset `%2` is not after startTimeOffset `%1`: the range is empty.|Warning|
+|MPEG_MEDIA_START_TIME_WITH_AUTOPLAY|startTime is not expected when autoplay is true.|Warning|
 |MULTIPLE_EXTENSIONS|This extension may be incompatible with other extensions for the object.|Warning|
 |NODE_EMPTY|Empty node encountered.|Information|
 |NODE_MATRIX_DEFAULT|Do not specify default transform matrix.|Information|
@@ -116,6 +120,15 @@
 |MESH_PRIMITIVE_POSITION_ACCESSOR_WITHOUT_BOUNDS|accessor.min and accessor.max must be defined for POSITION attribute accessor.|Error|
 |MESH_PRIMITIVE_TOO_FEW_TEXCOORDS|Material is incompatible with mesh primitive: Texture binding '`%1`' needs 'TEXCOORD_`%2`' attribute.|Error|
 |MESH_PRIMITIVE_UNEQUAL_ACCESSOR_COUNT|All accessors of the same primitive must have the same count.|Error|
+|MPEG_ACCESSOR_TIMED_BUFFER_NOT_CIRCULAR|accessor/`%1` has MPEG_accessor_timed but its buffer has no MPEG_buffer_circular extension.|Error|
+|MPEG_ACCESSOR_TIMED_BUFFER_REFERENCE_MISSMATCH|The MPEG_accessor_timed extension bufferView doesn't point tothe same buffer as accessor/`%1` bufferView.|Error|
+|MPEG_ACCESSOR_TIMED_MISSING_BUFFERVIEW|bufferView must be defined on MPEG_accessor_timed if notdefined on the base accessor.|Error|
+|MPEG_ACCESSOR_TIMED_MIXED_HEADERS|accessor/`%1` and accessor/`%2` share a buffer, only one of them has a timed accessor information header.|Error|
+|MPEG_BUFFER_CIRCULAR_TOO_SMALL|byteLength `%1` holds `%2` frames of `%3` bytes (the extent of the buffer views), count is `%4`.|Warning|
+|MPEG_BUFFER_CIRCULAR_TRACK_NOT_IN_ALTERNATIVE|Track `%1` is not a track of alternative `%2` of the media.|Error|
+|MPEG_BUFFER_CIRCULAR_WITH_URI|A buffer with MPEG_buffer_circular must not have a uri.|Error|
+|MPEG_TEXTURE_VIDEO_ACCESSOR_NOT_TIMED|accessor/`%1` must have the MPEG_accessor_timed extension.|Error|
+|MPEG_TEXTURE_VIDEO_FORMAT_ACCESSOR_TYPE|Format `%1` has `%2` component(s), but accessor type `%3` has `%4`.|Error|
 |NODE_LOOP|Node is a part of a node loop.|Error|
 |NODE_PARENT_OVERRIDE|Value overrides parent of node `%1`.|Error|
 |NODE_SKINNED_MESH_WITHOUT_SKIN|Node uses skinned mesh, but has no skin defined.|Warning|

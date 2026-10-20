@@ -188,9 +188,7 @@ dart test test/ext/MPEG_texture_video test/ext/MPEG_sampler_ycbcr test/ext/MPEG_
 dart test
 ```
 
-The new checks validate JSON properties and references; they do not decode video or V3C bitstreams. Video format validation currently covers the RGB, BGR, individual color-channel, and depth formats in `MPEG_TEXTURE_VIDEO_FORMATS`. YCbCr pixel formats and layout compatibility are not validated yet.
-
-Known failure: the buffer-circular test `normal asset parsing reports unresolved media` exposes an existing parser issue: buffer extensions are not linked automatically. Its explicit-link tests verify the reference checks separately.
+The new checks validate JSON properties and references; they do not decode video or V3C bitstreams. Video format validation currently covers the RGB, BGR, individual color-channel, and depth formats in `MPEG_TEXTURE_VIDEO_FORMATS`. The number of components of a video format is checked against the accessor type. YCbCr pixel formats are not validated yet.
 
 ## Contributing
 
