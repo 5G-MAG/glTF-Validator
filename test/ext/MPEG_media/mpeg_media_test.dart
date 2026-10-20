@@ -1,4 +1,6 @@
+import 'package:gltf/src/base/gltf.dart';
 import 'package:gltf/src/context.dart';
+import 'package:gltf/src/errors.dart';
 import 'package:gltf/src/ext/MPEG_media/mpeg_media.dart';
 import 'package:gltf/src/utils.dart';
 import 'package:test/test.dart';
@@ -31,5 +33,31 @@ void main() {
     getMapList(<String, Object>{}, 'items', context);
 
     expect(context.errors, hasLength(1));
+  });
+
+  test('MPEG_media is only allowed at the glTF root', () {
+    final context = Context();
+    Gltf.fromMap(<String, Object>{
+      'asset': <String, Object>{'version': '2.0'},
+      'extensionsUsed': <Object>['MPEG_media'],
+      'scenes': <Object>[
+        <String, Object>{
+          'nodes': <Object>[0]
+        }
+      ],
+      'nodes': <Object>[
+        <String, Object>{
+          'extensions': <String, Object>{
+            'MPEG_media': <String, Object>{'media': <Object>[]}
+          }
+        }
+      ],
+    }, context);
+
+    expect(
+        context.errors.map((issue) => issue.type),
+        contains(LinkError.unexpectedExtensionObject));
+    expect(context.errors.map((issue) => issue.type),
+        isNot(contains(SchemaError.undefinedProperty)));
   });
 }

@@ -78,8 +78,7 @@ const List<String> MPEG_MEDIA_ALTERNATIVE_TRACK_ITEMS = <String>[TRACK, CODECS];
 
 const Extension mpegMediaExtension =
     Extension('MPEG_media', <Type, ExtensionDescriptor>{
-  Gltf: ExtensionDescriptor(MPEGMediaObject.fromMap),
-  Node: ExtensionDescriptor(MPEGMedia.fromMap)
+  Gltf: ExtensionDescriptor(MPEGMediaObject.fromMap)
 });
 
 class MPEGMediaObject extends GltfProperty {
