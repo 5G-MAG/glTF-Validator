@@ -98,4 +98,38 @@ void main() {
     expect(issues.first.pointer,
         '/textures/0/extensions/MPEG_texture_video/accessor');
   });
+
+  const components = <String, int>{
+    'RED': 1,
+    'GREEN': 1,
+    'BLUE': 1,
+    'DEPTH_COMPONENT': 1,
+    'RG': 2,
+    'RGB': 3,
+    'BGR': 3,
+    'RGBA': 4,
+    'BGRA': 4,
+  };
+  const types = <int, String>{1: 'SCALAR', 2: 'VEC2', 3: 'VEC3', 4: 'VEC4'};
+
+  for (final format in components.keys) {
+    for (final n in types.keys) {
+      test('format $format with accessor type ${types[n]}', () {
+        final asset = mpegTestAsset();
+        videoProperties(asset)['format'] = format;
+        (asset['accessors'] as List)[0]['type'] = types[n];
+        final context = Context();
+        Gltf.fromMap(asset, context);
+        final issues = context.errors.where(
+            (i) => i.type == LinkError.mpegTextureVideoFormatAccessorType);
+        if (components[format] == n) {
+          expect(issues, isEmpty);
+        } else {
+          expect(issues, hasLength(1));
+          expect(issues.first.pointer,
+              '/textures/0/extensions/MPEG_texture_video/format');
+        }
+      });
+    }
+  }
 }

@@ -66,6 +66,18 @@ const List<String> MPEG_TEXTURE_VIDEO_FORMATS = [
   DEPTH
 ];
 
+const Map<String, int> _FORMAT_COMPONENTS = {
+  RED: 1,
+  GREEN: 1,
+  BLUE: 1,
+  DEPTH: 1,
+  RG: 2,
+  RGB: 3,
+  BGR: 3,
+  RGBA: 4,
+  BGRA: 4
+};
+
 const Extension mpegTextureVideoExtension = Extension(
     'MPEG_texture_video', <Type, ExtensionDescriptor>{
   Texture: ExtensionDescriptor(MPEGTextureVideo.fromMap)
@@ -116,6 +128,20 @@ class MPEGTextureVideo extends GltfProperty {
         if (_accessor.extensions['MPEG_accessor_timed'] == null) {
           context.addIssue(LinkError.mpegTextureVideoAccessorNotTimed,
               name: TIMED_ACCESSOR, args: [accessorIndex]);
+        }
+        final components = _FORMAT_COMPONENTS[textureFormat];
+        final accessorComponents = _accessor.components;
+        if (components != null &&
+            accessorComponents != 0 &&
+            components != accessorComponents) {
+          context.addIssue(LinkError.mpegTextureVideoFormatAccessorType,
+              name: TEXTURE_FORMAT,
+              args: [
+                textureFormat,
+                components,
+                _accessor.type,
+                accessorComponents
+              ]);
         }
       }
     }

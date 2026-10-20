@@ -860,6 +860,11 @@ class LinkError extends IssueType {
       'MPEG_TEXTURE_VIDEO_ACCESSOR_NOT_TIMED',
       (args) => 'accessor/${args[0]} must have the MPEG_accessor_timed extension.');
 
+  static final LinkError mpegTextureVideoFormatAccessorType = LinkError._(
+      'MPEG_TEXTURE_VIDEO_FORMAT_ACCESSOR_TYPE',
+      (args) => 'Format ${args[0]} has ${args[1]} component(s), but '
+          'accessor type ${args[2]} has ${args[3]}.');
+
   static final LinkError mpegBufferCircularWithUri = LinkError._(
       'MPEG_BUFFER_CIRCULAR_WITH_URI',
       (args) => 'A buffer with MPEG_buffer_circular must not have a uri.');
