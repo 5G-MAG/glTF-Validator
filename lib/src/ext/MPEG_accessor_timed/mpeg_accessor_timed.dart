@@ -60,8 +60,14 @@ class MPEGAccessorTimed extends GltfProperty {
 
   BufferView _bufferView;
 
+  bool get hasHeader => _bufferViewIndex != -1;
+
+  /// Whether the immutable flag was written in the asset
+  final bool immutableDeclared;
+
   MPEGAccessorTimed._(this._bufferViewIndex, this.m_updateRate,
-      this.m_immutable, Map<String, Object> map, Object extras)
+      this.m_immutable, this.immutableDeclared, Map<String, Object> map,
+      Object extras)
       : super(map, extras);
 
   BufferView get bufferView => _bufferView;
@@ -87,6 +93,7 @@ class MPEGAccessorTimed extends GltfProperty {
         bufferViewIndex,
         updateRate,
         immutable,
+        map.containsKey(IMMUTABLE),
         getExtensions(map, MPEGAccessorTimed, context),
         getExtras(map, context)); }
 
@@ -119,6 +126,35 @@ class MPEGAccessorTimed extends GltfProperty {
       if ((bufferView == null) && (baseAccessor.bufferView == null)){
           context.addIssue(LinkError.mpegAccessorTimedMissingBufferView, 
               args: [baseAccessorIndex]);
+      }
+
+      if (!hasHeader && !immutableDeclared) {
+        context.addIssue(SemanticError.mpegAccessorTimedImmutableRequired,
+            name: IMMUTABLE, noPointer: false);
+      }
+
+      final base = baseAccessor.bufferView;
+      if (base != null && base.buffer != null) {
+        // data of a timed accessor comes through a circular buffer
+        if (base.buffer.extensions['MPEG_buffer_circular'] == null) {
+          context.addIssue(LinkError.mpegAccessorTimedBufferNotCircular,
+              args: [baseAccessorIndex]);
+        }
+        // a buffer holds accessors with a header or accessors without
+        final self = int.parse(baseAccessorIndex);
+        for (var i = 0; i < self; i++) {
+          final other = gltf.accessors[i];
+          final timed = other.extensions['MPEG_accessor_timed'];
+          if (timed is MPEGAccessorTimed &&
+              other.bufferView != null &&
+              identical(other.bufferView.buffer, base.buffer)) {
+            if (timed.hasHeader != hasHeader) {
+              context.addIssue(LinkError.mpegAccessorTimedMixedHeaders,
+                  args: [i, baseAccessorIndex]);
+            }
+            break; // only against the first timed accessor of the buffer
+          }
+        }
       }
 
     }

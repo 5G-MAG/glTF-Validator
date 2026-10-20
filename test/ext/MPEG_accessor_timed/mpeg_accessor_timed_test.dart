@@ -2,18 +2,37 @@ import 'package:gltf/src/base/gltf.dart';
 import 'package:gltf/src/context.dart';
 import 'package:gltf/src/errors.dart';
 import 'package:gltf/src/ext/MPEG_accessor_timed/mpeg_accessor_timed.dart';
+import 'package:gltf/src/ext/MPEG_buffer_circular/mpeg_buffer_circular.dart';
+import 'package:gltf/src/ext/MPEG_media/mpeg_media.dart';
 import 'package:test/test.dart';
 
 Gltf _asset(Context context, Map<String, Object> extension,
         {bool baseBufferView = true}) =>
     Gltf.fromMap(<String, Object>{
       'asset': <String, Object>{'version': '2.0'},
-      'extensionsUsed': <Object>['MPEG_accessor_timed'],
+      'extensionsUsed': <Object>[
+        'MPEG_media',
+        'MPEG_buffer_circular',
+        'MPEG_accessor_timed'
+      ],
+      'extensions': <String, Object>{
+        'MPEG_media': <String, Object>{
+          'media': <Object>[
+            <String, Object>{
+              'alternatives': <Object>[
+                <String, Object>{'uri': 'media.mp4', 'mimeType': 'video/mp4'}
+              ]
+            }
+          ]
+        }
+      },
       'buffers': <Object>[
         for (var i = 0; i < 2; i++)
           <String, Object>{
             'byteLength': 8,
-            'uri': 'data:application/octet-stream;base64,AAAAAAAAAAA=',
+            'extensions': <String, Object>{
+              'MPEG_buffer_circular': <String, Object>{'media': 0}
+            },
           }
       ],
       'bufferViews': <Object>[
@@ -33,7 +52,12 @@ Gltf _asset(Context context, Map<String, Object> extension,
     }, context);
 
 Context _context() =>
-    Context()..registerExtensions([mpegTimedAccessorExtension]);
+    Context()
+  ..registerExtensions([
+    mpegMediaExtension,
+    mpegBufferCircularExtension,
+    mpegTimedAccessorExtension
+  ]);
 
 void main() {
   group('MPEG_accessor_timed parsing', () {
@@ -115,6 +139,110 @@ void main() {
           .singleWhere((i) => i.type == LinkError.unresolvedReference);
       expect(issue.toMap()['pointer'],
           '/accessors/0/extensions/MPEG_accessor_timed/bufferView');
+    });
+
+    Gltf _custom(Context context, List<Object> buffers,
+            List<Object> accessors) =>
+        Gltf.fromMap(<String, Object>{
+          'asset': <String, Object>{'version': '2.0'},
+          'extensionsUsed': <Object>[
+            'MPEG_media',
+            'MPEG_buffer_circular',
+            'MPEG_accessor_timed'
+          ],
+          'extensions': <String, Object>{
+            'MPEG_media': <String, Object>{
+              'media': <Object>[
+                <String, Object>{
+                  'alternatives': <Object>[
+                    <String, Object>{
+                      'uri': 'media.mp4',
+                      'mimeType': 'video/mp4'
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          'buffers': buffers,
+          'bufferViews': <Object>[
+            <String, Object>{'buffer': 0, 'byteLength': 4},
+            <String, Object>{'buffer': 0, 'byteOffset': 4, 'byteLength': 4},
+          ],
+          'accessors': accessors,
+        }, context);
+
+    Map<String, Object> _circular() => <String, Object>{
+          'byteLength': 8,
+          'extensions': <String, Object>{
+            'MPEG_buffer_circular': <String, Object>{'media': 0}
+          },
+        };
+
+    Map<String, Object> _timed(Map<String, Object> extension) =>
+        <String, Object>{
+          'bufferView': 0,
+          'componentType': 5126,
+          'count': 1,
+          'type': 'SCALAR',
+          'extensions': <String, Object>{'MPEG_accessor_timed': extension},
+        };
+
+    test('reports a timed accessor on a buffer that is not circular', () {
+      final context = _context();
+      _custom(context, <Object>[
+        <String, Object>{'byteLength': 8}
+      ], <Object>[
+        _timed(<String, Object>{'immutable': true})
+      ]);
+      expect(context.errors.map((i) => i.type),
+          contains(LinkError.mpegAccessorTimedBufferNotCircular));
+    });
+
+    test('reports accessors of one buffer that mix headers and no headers',
+        () {
+      final context = _context();
+      _custom(context, <Object>[
+        _circular()
+      ], <Object>[
+        _timed(<String, Object>{'bufferView': 1}),
+        _timed(<String, Object>{'immutable': true}),
+      ]);
+      expect(context.errors.map((i) => i.type),
+          contains(LinkError.mpegAccessorTimedMixedHeaders));
+    });
+
+    test('accepts accessors of one buffer that all have a header', () {
+      final context = _context();
+      _custom(context, <Object>[
+        _circular()
+      ], <Object>[
+        _timed(<String, Object>{'bufferView': 1}),
+        _timed(<String, Object>{'bufferView': 1}),
+      ]);
+      expect(context.errors, isEmpty);
+    });
+
+    test('warns when there is no header and immutable is not written', () {
+      final context = _context();
+      _custom(context, <Object>[
+        _circular()
+      ], <Object>[
+        _timed(<String, Object>{})
+      ]);
+      expect(context.warnings.map((i) => i.type),
+          contains(SemanticError.mpegAccessorTimedImmutableRequired));
+    });
+
+    test('does not warn when there is no header and immutable is written', () {
+      final context = _context();
+      _custom(context, <Object>[
+        _circular()
+      ], <Object>[
+        _timed(<String, Object>{'immutable': false})
+      ]);
+      expect(context.warnings.map((i) => i.type),
+          isNot(contains(SemanticError.mpegAccessorTimedImmutableRequired)));
     });
   });
 }

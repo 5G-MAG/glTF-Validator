@@ -575,6 +575,12 @@ class SemanticError extends IssueType {
           '${args[0]}: the range is empty.',
       Severity.Warning);
 
+  static final SemanticError mpegAccessorTimedImmutableRequired = SemanticError._(
+      'MPEG_ACCESSOR_TIMED_IMMUTABLE_REQUIRED',
+      (args) => 'Without a bufferView the immutable flag should be present '
+          'and true; an absent flag is read as true.',
+      Severity.Warning);
+
   SemanticError._(String type, ErrorFunction message,
       [Severity severity = Severity.Error])
       : super(type, message, severity);
@@ -868,6 +874,16 @@ class LinkError extends IssueType {
       (args) => 'byteLength ${args[0]} holds ${args[1]} frames of ${args[2]} '
           'bytes (the extent of the buffer views), count is ${args[3]}.',
       Severity.Warning);
+
+  static final LinkError mpegAccessorTimedBufferNotCircular = LinkError._(
+      'MPEG_ACCESSOR_TIMED_BUFFER_NOT_CIRCULAR',
+      (args) => 'accessor/${args[0]} has MPEG_accessor_timed but its buffer '
+          'has no MPEG_buffer_circular extension.');
+
+  static final LinkError mpegAccessorTimedMixedHeaders = LinkError._(
+      'MPEG_ACCESSOR_TIMED_MIXED_HEADERS',
+      (args) => 'accessor/${args[0]} and accessor/${args[1]} share a buffer, '
+          'only one of them has a timed accessor information header.');
 
   LinkError._(String type, ErrorFunction message,
       [Severity severity = Severity.Error])
