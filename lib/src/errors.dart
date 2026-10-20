@@ -560,6 +560,27 @@ class SemanticError extends IssueType {
               'minimum is equal to the thickness maximum.',
           Severity.Information);
 
+  static final SemanticError mpegMediaAutoplayGroupWithoutAutoplay = SemanticError._(
+      'MPEG_MEDIA_AUTOPLAY_GROUP_WITHOUT_AUTOPLAY',
+      (args) => 'autoplayGroup is only allowed when autoplay is true.');
+
+  static final SemanticError mpegMediaStartTimeWithAutoplay = SemanticError._(
+      'MPEG_MEDIA_START_TIME_WITH_AUTOPLAY',
+      (args) => 'startTime is not expected when autoplay is true.',
+      Severity.Warning);
+
+  static final SemanticError mpegMediaEmptyTimeRange = SemanticError._(
+      'MPEG_MEDIA_EMPTY_TIME_RANGE',
+      (args) => 'endTimeOffset ${args[1]} is not after startTimeOffset '
+          '${args[0]}: the range is empty.',
+      Severity.Warning);
+
+  static final SemanticError mpegAccessorTimedImmutableRequired = SemanticError._(
+      'MPEG_ACCESSOR_TIMED_IMMUTABLE_REQUIRED',
+      (args) => 'Without a bufferView the immutable flag should be present '
+          'and true; an absent flag is read as true.',
+      Severity.Warning);
+
   SemanticError._(String type, ErrorFunction message,
       [Severity severity = Severity.Error])
       : super(type, message, severity);
@@ -825,6 +846,49 @@ class LinkError extends IssueType {
   static final LinkError khrMaterialsVariantsNonUniqueVariant = LinkError._(
       'KHR_MATERIALS_VARIANTS_NON_UNIQUE_VARIANT',
       (args) => 'This variant is used more than once for this mesh primitive.');
+
+  static final LinkError mpegAccessorTimedBufferReferenceMissmatch = LinkError._(
+      'MPEG_ACCESSOR_TIMED_BUFFER_REFERENCE_MISSMATCH',
+      (args) => "The MPEG_accessor_timed extension bufferView doesn't point to"
+        'the same buffer as accessor/${args[0]} bufferView.');
+
+  static final LinkError mpegAccessorTimedMissingBufferView = LinkError._(
+      'MPEG_ACCESSOR_TIMED_MISSING_BUFFERVIEW',
+      (args) => 'bufferView must be defined on MPEG_accessor_timed if not'
+          'defined on the base accessor.');
+  static final LinkError mpegTextureVideoAccessorNotTimed = LinkError._(
+      'MPEG_TEXTURE_VIDEO_ACCESSOR_NOT_TIMED',
+      (args) => 'accessor/${args[0]} must have the MPEG_accessor_timed extension.');
+
+  static final LinkError mpegTextureVideoFormatAccessorType = LinkError._(
+      'MPEG_TEXTURE_VIDEO_FORMAT_ACCESSOR_TYPE',
+      (args) => 'Format ${args[0]} has ${args[1]} component(s), but '
+          'accessor type ${args[2]} has ${args[3]}.');
+
+  static final LinkError mpegBufferCircularWithUri = LinkError._(
+      'MPEG_BUFFER_CIRCULAR_WITH_URI',
+      (args) => 'A buffer with MPEG_buffer_circular must not have a uri.');
+
+  static final LinkError mpegBufferCircularTrackNotInAlternative = LinkError._(
+      'MPEG_BUFFER_CIRCULAR_TRACK_NOT_IN_ALTERNATIVE',
+      (args) => 'Track ${args[0]} is not a track of alternative ${args[1]} '
+          'of the media.');
+
+  static final LinkError mpegBufferCircularTooSmall = LinkError._(
+      'MPEG_BUFFER_CIRCULAR_TOO_SMALL',
+      (args) => 'byteLength ${args[0]} holds ${args[1]} frames of ${args[2]} '
+          'bytes (the extent of the buffer views), count is ${args[3]}.',
+      Severity.Warning);
+
+  static final LinkError mpegAccessorTimedBufferNotCircular = LinkError._(
+      'MPEG_ACCESSOR_TIMED_BUFFER_NOT_CIRCULAR',
+      (args) => 'accessor/${args[0]} has MPEG_accessor_timed but its buffer '
+          'has no MPEG_buffer_circular extension.');
+
+  static final LinkError mpegAccessorTimedMixedHeaders = LinkError._(
+      'MPEG_ACCESSOR_TIMED_MIXED_HEADERS',
+      (args) => 'accessor/${args[0]} and accessor/${args[1]} share a buffer, '
+          'only one of them has a timed accessor information header.');
 
   LinkError._(String type, ErrorFunction message,
       [Severity severity = Severity.Error])
