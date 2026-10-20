@@ -60,4 +60,32 @@ void main() {
     expect(context.errors.map((issue) => issue.type),
         isNot(contains(SchemaError.undefinedProperty)));
   });
+
+  group('autoplayGroup is an integer', () {
+    MPEGMedia parse(Object value, Context context) =>
+        MPEGMedia.fromMap(<String, Object>{
+          'autoplay': true,
+          'autoplayGroup': value,
+          'alternatives': <Object>[
+            <String, Object>{'uri': 'media.mp4', 'mimeType': 'video/mp4'}
+          ],
+        }, context);
+
+    test('accepts a non-negative integer', () {
+      for (final value in <Object>[0, 1, 7]) {
+        final context = Context();
+        final media = parse(value, context);
+        expect(context.issues, isEmpty, reason: 'autoplayGroup: $value');
+        expect(media.autoplayGroup, value);
+      }
+    });
+
+    test('rejects a boolean, a string, a fraction and a negative number', () {
+      for (final value in <Object>[true, false, '1', 1.5, -1]) {
+        final context = Context();
+        parse(value, context);
+        expect(context.errors, isNotEmpty, reason: 'autoplayGroup: $value');
+      }
+    });
+  });
 }

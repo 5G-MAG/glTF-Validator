@@ -141,7 +141,7 @@ class MPEGMedia extends GltfProperty {
   final double startTimeOffset;
   final double endTimeOffset;
   final bool autoplay;
-  final bool autoplayGroup;
+  final int autoplayGroup;
   final bool loop;
   final bool controls;
   final SafeList<MPEGMediaAlternatives> alternatives;
@@ -171,7 +171,7 @@ class MPEGMedia extends GltfProperty {
     final startTimeOffset = getFloat(map, STARTTIMEOFFSET, context, def: 0.0);
     final endStartTime = getFloat(map, ENDTIMEOFFSET, context);
     final autoplay = getBool(map, AUTOPLAY, context);
-    final autoplaygroup = getBool(map, AUTOPLAYGROUP, context);
+    final autoplaygroup = getUint(map, AUTOPLAYGROUP, context, min: 0);
     final loop = getBool(map, LOOP, context);
     final controls = getBool(map, CONTROLS, context);
 
