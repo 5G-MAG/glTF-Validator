@@ -1,6 +1,7 @@
 import 'package:gltf/gltf.dart';
 import 'package:gltf/src/ext/MPEG_texture_video/mpeg_texture_video.dart'
     as video;
+import 'package:gltf/src/errors.dart';
 import 'package:test/test.dart';
 
 import '../mpeg_test_utils.dart';
@@ -84,5 +85,17 @@ void main() {
     Gltf.fromMap(asset, context);
     expect(context.errors.map((i) => i.toMap()['pointer']),
         contains('/textures/0/extensions/MPEG_texture_video/accessor'));
+  });
+
+  test('the accessor must have MPEG_accessor_timed', () {
+    final asset = mpegTestAsset();
+    accessorExtensions(asset, 0).remove('MPEG_accessor_timed');
+    final context = Context();
+    Gltf.fromMap(asset, context);
+    final issues = context.errors
+        .where((i) => i.type == LinkError.mpegTextureVideoAccessorNotTimed);
+    expect(issues, hasLength(1));
+    expect(issues.first.pointer,
+        '/textures/0/extensions/MPEG_texture_video/accessor');
   });
 }

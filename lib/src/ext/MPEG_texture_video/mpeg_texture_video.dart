@@ -28,6 +28,7 @@
  */
 library gltf.extensions.mpeg_texture_video;
 
+import 'package:gltf/src/errors.dart';
 import 'package:gltf/src/base/gltf_property.dart';
 import 'package:gltf/src/ext/extensions.dart';
 
@@ -112,6 +113,10 @@ class MPEGTextureVideo extends GltfProperty {
             name: TIMED_ACCESSOR, args: [accessorIndex]);
       } else {
         _accessor.markAsUsed();
+        if (_accessor.extensions['MPEG_accessor_timed'] == null) {
+          context.addIssue(LinkError.mpegTextureVideoAccessorNotTimed,
+              name: TIMED_ACCESSOR, args: [accessorIndex]);
+        }
       }
     }
   }

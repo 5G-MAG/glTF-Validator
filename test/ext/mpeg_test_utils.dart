@@ -2,12 +2,31 @@
 Map<String, Object> mpegTestAsset() => <String, Object>{
       'asset': <String, Object>{'version': '2.0'},
       'extensionsUsed': <Object>[
+        'MPEG_media',
+        'MPEG_buffer_circular',
+        'MPEG_accessor_timed',
         'MPEG_texture_video',
         'MPEG_sampler_YCbCr',
         'MPEG_primitive_V3C',
       ],
+      'extensions': <String, Object>{
+        'MPEG_media': <String, Object>{
+          'media': <Object>[
+            <String, Object>{
+              'alternatives': <Object>[
+                <String, Object>{'uri': 'media.mp4', 'mimeType': 'video/mp4'}
+              ]
+            }
+          ]
+        }
+      },
       'buffers': <Object>[
-        <String, Object>{'byteLength': 44, 'uri': 'data.bin'}
+        <String, Object>{
+          'byteLength': 44,
+          'extensions': <String, Object>{
+            'MPEG_buffer_circular': <String, Object>{'media': 0}
+          }
+        }
       ],
       'bufferViews': <Object>[
         <String, Object>{'buffer': 0, 'byteLength': 4},
@@ -21,6 +40,9 @@ Map<String, Object> mpegTestAsset() => <String, Object>{
             'componentType': 5121,
             'count': 4,
             'type': 'SCALAR',
+            'extensions': <String, Object>{
+              'MPEG_accessor_timed': <String, Object>{'immutable': true}
+            },
           },
         <String, Object>{
           'bufferView': 2,
@@ -77,4 +99,8 @@ Map<String, Object> videoProperties(Map<String, Object> asset) =>
 Map<String, Object> v3cProperties(Map<String, Object> asset) =>
     (((((asset['meshes'] as List)[0] as Map)['primitives'] as List)[0]
             as Map)['extensions'] as Map)['MPEG_primitive_V3C']
+        as Map<String, Object>;
+
+Map<String, Object> accessorExtensions(Map<String, Object> asset, int index) =>
+    ((asset['accessors'] as List)[index] as Map)['extensions']
         as Map<String, Object>;

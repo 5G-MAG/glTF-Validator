@@ -835,6 +835,10 @@ class LinkError extends IssueType {
       'MPEG_ACCESSOR_TIMED_MISSING_BUFFERVIEW',
       (args) => 'bufferView must be defined on MPEG_accessor_timed if not'
           'defined on the base accessor.');
+  static final LinkError mpegTextureVideoAccessorNotTimed = LinkError._(
+      'MPEG_TEXTURE_VIDEO_ACCESSOR_NOT_TIMED',
+      (args) => 'accessor/${args[0]} must have the MPEG_accessor_timed extension.');
+
   LinkError._(String type, ErrorFunction message,
       [Severity severity = Severity.Error])
       : super(type, message, severity);
