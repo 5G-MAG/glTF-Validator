@@ -88,4 +88,59 @@ void main() {
       }
     });
   });
+
+  group('timing properties', () {
+    Iterable<IssueType> issues(Map<String, Object> media) {
+      final context = Context();
+      MPEGMedia.fromMap(<String, Object>{
+        ...media,
+        'alternatives': <Object>[
+          <String, Object>{'uri': 'media.mp4', 'mimeType': 'video/mp4'}
+        ],
+      }, context);
+      return context.issues.map((issue) => issue.type);
+    }
+
+    test('autoplayGroup needs autoplay', () {
+      expect(issues(<String, Object>{'autoplayGroup': 1}),
+          [SemanticError.mpegMediaAutoplayGroupWithoutAutoplay]);
+      expect(issues(<String, Object>{'autoplay': false, 'autoplayGroup': 1}),
+          [SemanticError.mpegMediaAutoplayGroupWithoutAutoplay]);
+      expect(issues(<String, Object>{'autoplay': true, 'autoplayGroup': 1}),
+          isEmpty);
+    });
+
+    test('startTime with autoplay is a warning', () {
+      final context = Context();
+      MPEGMedia.fromMap(<String, Object>{
+        'autoplay': true,
+        'startTime': 1.0,
+        'alternatives': <Object>[
+          <String, Object>{'uri': 'media.mp4', 'mimeType': 'video/mp4'}
+        ],
+      }, context);
+      expect(context.errors, isEmpty);
+      expect(context.warnings.map((issue) => issue.type),
+          [SemanticError.mpegMediaStartTimeWithAutoplay]);
+      expect(issues(<String, Object>{'startTime': 1.0}), isEmpty);
+    });
+
+    test('endTimeOffset not after startTimeOffset is a warning', () {
+      final context = Context();
+      MPEGMedia.fromMap(<String, Object>{
+        'startTimeOffset': 5.0,
+        'endTimeOffset': 1.0,
+        'alternatives': <Object>[
+          <String, Object>{'uri': 'media.mp4', 'mimeType': 'video/mp4'}
+        ],
+      }, context);
+      expect(context.errors, isEmpty);
+      expect(context.warnings.map((issue) => issue.type),
+          [SemanticError.mpegMediaEmptyTimeRange]);
+      expect(issues(<String, Object>{'endTimeOffset': 5.0}), isEmpty);
+      expect(
+          issues(<String, Object>{'startTimeOffset': 1.0, 'endTimeOffset': 2.0}),
+          isEmpty);
+    });
+  });
 }

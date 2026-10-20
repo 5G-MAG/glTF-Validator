@@ -560,6 +560,21 @@ class SemanticError extends IssueType {
               'minimum is equal to the thickness maximum.',
           Severity.Information);
 
+  static final SemanticError mpegMediaAutoplayGroupWithoutAutoplay = SemanticError._(
+      'MPEG_MEDIA_AUTOPLAY_GROUP_WITHOUT_AUTOPLAY',
+      (args) => 'autoplayGroup is only allowed when autoplay is true.');
+
+  static final SemanticError mpegMediaStartTimeWithAutoplay = SemanticError._(
+      'MPEG_MEDIA_START_TIME_WITH_AUTOPLAY',
+      (args) => 'startTime is not expected when autoplay is true.',
+      Severity.Warning);
+
+  static final SemanticError mpegMediaEmptyTimeRange = SemanticError._(
+      'MPEG_MEDIA_EMPTY_TIME_RANGE',
+      (args) => 'endTimeOffset ${args[1]} is not after startTimeOffset '
+          '${args[0]}: the range is empty.',
+      Severity.Warning);
+
   SemanticError._(String type, ErrorFunction message,
       [Severity severity = Severity.Error])
       : super(type, message, severity);
